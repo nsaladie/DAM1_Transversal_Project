@@ -39,7 +39,7 @@
                 <input type="email" name="username" style="background-color:transparent;border: 0;" required placeholder="EMAIL">
             </div>
             <div class="password">
-                <input type="password" name="password" style="background-color:transparent;border: 0;" required placeholder="PASSWORD" pattern="^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$">
+                <input type="password" name="password" style="background-color:transparent;border: 0;" required placeholder="PASSWORD" pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$">
             </div>
             <input type="hidden" name="admin">
             <div class="icon">

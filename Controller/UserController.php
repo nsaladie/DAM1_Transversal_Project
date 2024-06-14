@@ -48,13 +48,13 @@ class UserController
         $mail = $_POST["email"];
         $password = $_POST["password"];
 
-        $stmt = $this->conn->prepare("SELECT Administrador, Contrasenya FROM Usuario WHERE email = :mail");
+        $stmt = $this->conn->prepare("SELECT Administrador, Password FROM Usuario WHERE email = :mail");
         $stmt->bindParam(':mail', $mail);
         $stmt->execute();
         // It binds the 'Administrador' column to the variable $admin (this column is a boolean)
         $stmt->bindColumn("Administrador", $admin);
-        // It binds the 'Contrasenya' column to the variable $hashPassword (this column is a varchar)
-        $stmt->bindColumn("Contrasenya", $hashPassword);
+        // It binds the 'Password' column to the variable $hashPassword (this column is a varchar)
+        $stmt->bindColumn("Password", $hashPassword);
         // Check if the query have at least one result
         if ($stmt->fetch()) {
             // Check if the password is hashed or not
@@ -82,7 +82,7 @@ class UserController
         // Update password alredy created to hash
         $newHashedPassword = password_hash($password, PASSWORD_DEFAULT);
         try {
-            $updateStmt = $this->conn->prepare("UPDATE Usuario SET Contrasenya = :hashedPassword WHERE Email = :mail");
+            $updateStmt = $this->conn->prepare("UPDATE Usuario SET Password = :hashedPassword WHERE Email = :mail");
             $updateStmt->bindParam(':hashedPassword', $newHashedPassword);
             $updateStmt->bindParam(':mail', $mail);
             $updateStmt->execute();
@@ -135,6 +135,7 @@ class UserController
         $mail = $_POST['username'];
         $password = $_POST['password'];
         $admin = isset($_POST['admin']) ? 1 : 0;
+        $minumPasswordLength = 4;
 
         // Check if the name/surname have numbers in the string
         if (!preg_match('/[A-Za-z\s]+/', $name) || !preg_match('/[A-Za-z\s]+/', $surname)) {
@@ -150,9 +151,13 @@ class UserController
             $errors['incorrectMail'] = "The email is already registered.";
         }
 
-        // Check if the password is smaller than 8 and if it does not have at least one numeric character and one alphabetical character
-        if (!preg_match('/^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$/', $password)) {
-            $errors['incorrectPassword'] = "The password must have at least one number and one letter, and be 8 or more characters long.";
+        // Check if the password not have at least one numeric character and one alphabetical character
+        if (!preg_match('/^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9]+$/', $password)) {
+            $errors['incorrectPassword'] = "The password must have at least one number, one letter, and contain only alphanumeric characters.";
+        }
+        // Chek if the password is equals or minus of 4 charecteres
+        if (strlen($password) <= $minumPasswordLength){
+            $errors['incorrectLength'] = "The password must have at least 5 characteres";
         }
 
         // Checks if the user is admin and if the uploaded file size is not empty
@@ -188,7 +193,7 @@ class UserController
 
         $hashPassword = password_hash($password, PASSWORD_DEFAULT);
         try {
-            $stmt = $this->conn->prepare("INSERT INTO Usuario (`Nombre`, `Apellido`, `Email`, `Contrasenya`, `Imagen`, `Administrador`) VALUES (:name, :surname, :mail, :password, :icon, :admin)");
+            $stmt = $this->conn->prepare("INSERT INTO Usuario (`Nombre`, `Apellido`, `Email`, `Password`, `Imagen`, `Administrador`) VALUES (:name, :surname, :mail, :password, :icon, :admin)");
             $stmt->bindParam(':name', $name);
             $stmt->bindParam(':surname', $surname);
             $stmt->bindParam(':mail', $mail);
@@ -270,7 +275,7 @@ class UserController
         // Save in a variable the result of hash the password sended by the user
         $hashPassword = password_hash($password, PASSWORD_DEFAULT);
         try {
-            $stmt = $this->conn->prepare("UPDATE USUARIO SET Nombre = :name, Apellido = :surname, Contrasenya = :password WHERE Email = :mail");
+            $stmt = $this->conn->prepare("UPDATE USUARIO SET Nombre = :name, Apellido = :surname, Password = :password WHERE Email = :mail");
             $stmt->bindParam(':name', $name);
             $stmt->bindParam(':surname', $surname);
             $stmt->bindParam(':password', $hashPassword);
